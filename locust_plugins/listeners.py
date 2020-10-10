@@ -25,7 +25,7 @@ from typing import List
 def create_dbconn():
     try:
         conn = psycopg2.connect(
-            host=os.environ["PGHOST"], keepalives_idle=120, keepalives_interval=20, keepalives_count=6
+            host=os.getenv("PGHOST", '127.0.0.1'), keepalives_idle=120, keepalives_interval=20, keepalives_count=6, user=os.environ["USER"], password=os.environ["PASSWORD"], port=os.getenv('PGPORT', 5432), database=os.getenv('database', 'postgres')
         )
     except Exception:
         logging.error(
@@ -49,12 +49,12 @@ class TimescaleListener:  # pylint: disable=R0902
     """
 
     def __init__(
-        self,
-        env: locust.env.Environment,
-        testplan: str,
-        target_env: str = os.getenv("LOCUST_TEST_ENV", ""),
-        profile_name: str = "",
-        description: str = "",
+            self,
+            env: locust.env.Environment,
+            testplan: str,
+            target_env: str = os.getenv("LOCUST_TEST_ENV", ""),
+            profile_name: str = "",
+            description: str = "",
     ):
         self.grafana_url = os.environ["LOCUST_GRAFANA_URL"]
         self._conn = create_dbconn()
@@ -76,13 +76,13 @@ class TimescaleListener:  # pylint: disable=R0902
         self._description = description
         self._pid = os.getpid()
         self._gitrepo = (
-            subprocess.check_output(
-                "git remote show origin -n 2>/dev/null | grep h.URL | sed 's/.*://;s/.git$//'",
-                shell=True,
-                stderr=None,
-                universal_newlines=True,
-            )
-            or None  # default to None instead of empty string
+                subprocess.check_output(
+                    "git remote show origin -n 2>/dev/null | grep h.URL | sed 's/.*://;s/.git$//'",
+                    shell=True,
+                    stderr=None,
+                    universal_newlines=True,
+                )
+                or None  # default to None instead of empty string
         )
         if is_worker() or is_master():
             # swarm generates the run id for its master and workers
@@ -98,7 +98,7 @@ class TimescaleListener:  # pylint: disable=R0902
             self._run_id = datetime.now(timezone.utc)
         if not is_worker():
             logging.info(
-                f"Follow test run here: {self.grafana_url}&var-testplan={self._testplan}&from={int(self._run_id.timestamp()*1000)}&to=now"
+                f"Follow test run here: {self.grafana_url}&var-testplan={self._testplan}&from={int(self._run_id.timestamp() * 1000)}&to=now"
             )
             self.log_start_testrun()
             self._user_count_logger = gevent.spawn(self._log_user_count)
@@ -264,7 +264,7 @@ class TimescaleListener:  # pylint: disable=R0902
                 + repr(error)
             )
         logging.info(
-            f"Report: {self.grafana_url}&var-testplan={self._testplan}&from={int(self._run_id.timestamp()*1000)}&to={int((end_time.timestamp()+1)*1000)}\n"
+            f"Report: {self.grafana_url}&var-testplan={self._testplan}&from={int(self._run_id.timestamp() * 1000)}&to={int((end_time.timestamp() + 1) * 1000)}\n"
         )
 
     def exit(self):

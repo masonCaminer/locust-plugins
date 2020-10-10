@@ -5,14 +5,18 @@ import ast
 import re
 
 from setuptools import find_packages, setup
-
+"""
+python setup.py bdist_wheel 
+python setup.py sdist 
+twine upload dist/*
+"""
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 _init_file = "locust_plugins/__init__.py"
 with open(_init_file, "rb") as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode("utf-8")).group(1)))
 
 setup(
-    name="locust-plugins",
+    name="thickly-plugins",
     version=version,
     description="Useful plugins/extensions for Locust",
     long_description="""https://github.com/SvenskaSpel/locust-plugins""",
@@ -24,6 +28,7 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
     ],
